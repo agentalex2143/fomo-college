@@ -233,6 +233,7 @@
     <a href="#schools">The board</a>
     <a href="#how">Playbook</a>
     <a href="#faq">FAQ</a>
+    <a href="benefits.html">Why join</a>
     <a href="#" class="nav-cta" data-apply>Claim your school</a>
   </div>
 </nav>
@@ -396,7 +397,11 @@
     { name: 'Indiana', form: 'Indiana', abbr: 'IU', loc: 'Bloomington, IN', bg: '#990000', fg: '#f7f7f7', front: null, back: null },
     { name: 'West Virginia', form: 'West Virginia', abbr: 'WVU', loc: 'Morgantown, WV', bg: '#002855', fg: '#EAAA00', front: null, back: null },
     { name: 'Miami', form: 'Miami', abbr: 'UM', loc: 'Coral Gables, FL', bg: '#F47321', fg: '#005030', front: null, back: null },
-    { name: 'San Diego State', form: 'San Diego State', abbr: 'SDSU', loc: 'San Diego, CA', bg: '#A6192E', fg: '#f7f7f7', front: null, back: null }
+    { name: 'San Diego State', form: 'San Diego State', abbr: 'SDSU', loc: 'San Diego, CA', bg: '#A6192E', fg: '#f7f7f7', front: null, back: null },
+    { name: 'Florida', form: 'Florida', abbr: 'UF', loc: 'Gainesville, FL', bg: '#0021A5', fg: '#FA4616', front: null, back: null },
+    { name: 'Tennessee', form: 'Tennessee', abbr: 'VOLS', loc: 'Knoxville, TN', bg: '#FF8200', fg: '#FFFFFF', front: null, back: null },
+    { name: 'South Carolina', form: 'South Carolina', abbr: 'SC', loc: 'Columbia, SC', bg: '#73000A', fg: '#f7f7f7', front: null, back: null },
+    { name: 'USC', form: 'USC', abbr: 'USC', loc: 'Los Angeles, CA', bg: '#990000', fg: '#FFC72C', front: null, back: null }
   ];
 
   function applyUrl(school, seatValue) {
@@ -456,6 +461,14 @@
   document.getElementById('modalClose').addEventListener('click', closeModal);
   bg.addEventListener('click', function (e) { if (e.target === bg) closeModal(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+  var qsSchool = new URLSearchParams(location.search).get('school');
+  if (qsSchool) {
+    var norm = function (s) { return String(s).toLowerCase().replace(/[^a-z]/g, ''); };
+    var qi = -1;
+    SCHOOLS.forEach(function (s, i) { if (qi === -1 && (norm(s.abbr) === norm(qsSchool) || norm(s.name) === norm(qsSchool))) qi = i; });
+    if (qi > -1) setTimeout(function () { openModal(qi); }, 350);
+  }
 
   document.querySelectorAll('[data-apply]').forEach(function (a) {
     a.setAttribute('href', applyUrl(null, null));
