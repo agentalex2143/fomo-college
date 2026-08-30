@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!--
+  fomo x college — ops dashboard
+  Designed & built by Alex (github.com/agentalex2143), 2026. All rights reserved.
+  Reads the sanitized published pipeline (no applicant emails on this page).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fomo × college — Ops</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#606af7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23606af7'/%3E%3Ctext x='32' y='46' font-size='40' font-family='Arial Black,Arial' font-weight='900' fill='%23f7f7f7' text-anchor='middle'%3Ef%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #060510; --ink-2: #12111a;
+    --accent: #606af7; --accent-hot: #7c85ff;
+    --cream: #f7f7f7; --muted: #9aa0b8; --green: #3ddc84; --red: #ff5a5a;
+    --display: 'Archivo Black', Impact, sans-serif;
+    --body: 'Space Grotesk', -apple-system, sans-serif;
+    --mono: 'Space Mono', 'Courier New', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--ink); color: var(--cream); font-family: var(--body); line-height: 1.5; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    padding: 1.2rem 4vw; border-bottom: 1px solid rgba(96,106,247,0.35);
+  }
+  .logo { font-family: var(--display); font-size: 1.1rem; }
+  .logo .fomo { color: var(--accent); }
+  .logo .tag { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); display: block; letter-spacing: 2px; margin-top: -3px; }
+  .head-right { display: flex; align-items: center; gap: 1.2rem; font-family: var(--mono); font-size: 0.72rem; }
+  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 0.4rem; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .btn-refresh { border: 1px solid rgba(247,247,247,0.25); padding: 0.4rem 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); font-size: 0.7rem; transition: border-color 0.2s; }
+  .btn-refresh:hover { border-color: var(--accent-hot); color: var(--accent-hot); }
+  .back { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .back:hover { color: var(--accent-hot); }
+
+  main { max-width: 1150px; margin: 0 auto; padding: 2.2rem 4vw 4rem; }
+  h1 { font-family: var(--display); font-size: clamp(1.6rem, 4vw, 2.4rem); text-transform: uppercase; margin-bottom: 0.3rem; }
+  .sub { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin-bottom: 2rem; letter-spacing: 0.5px; }
+  .sub b { color: var(--green); }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2.4rem; }
+  .kpi { background: var(--ink-2); border: 1px solid rgba(247,247,247,0.1); padding: 1.2rem 1.3rem; }
+  .kpi .n { font-family: var(--display); font-size: 2rem; color: var(--accent-hot); line-height: 1.1; }
+  .kpi .l { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.3rem; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; align-items: start; }
+  @media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+  .panel { background: var(--ink-2); border: 1px solid rgba(247,247,247,0.1); padding: 1.5rem; }
+  .panel h2 { font-family: var(--display); font-size: 1rem; text-transform: uppercase; margin-bottom: 1.1rem; letter-spacing: 0.5px; }
+  .panel h2 span { color: var(--accent-hot); }
+
+  .bar-row { display: grid; grid-template-columns: 120px 1fr 34px; gap: 0.8rem; align-items: center; margin-bottom: 0.55rem; font-family: var(--mono); font-size: 0.72rem; }
+  .bar-row .nm { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { background: rgba(247,247,247,0.07); height: 14px; position: relative; }
+  .bar-fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); min-width: 2px; transition: width 0.6s ease; }
+  .bar-row .ct { text-align: right; color: var(--cream); font-weight: 700; }
+
+  .seat-split { display: flex; gap: 1rem; margin-top: 1.2rem; }
+  .seat-chip { flex: 1; border: 1px solid rgba(247,247,247,0.12); padding: 0.8rem; font-family: var(--mono); font-size: 0.7rem; text-align: center; }
+  .seat-chip b { display: block; font-family: var(--display); font-size: 1.3rem; color: var(--accent-hot); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid rgba(247,247,247,0.15); }
+  td { padding: 0.6rem; border-bottom: 1px solid rgba(247,247,247,0.07); vertical-align: top; }
+  td.t { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+  td .seat-b { font-family: var(--mono); font-size: 0.62rem; padding: 0.1rem 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .fe { background: rgba(96,106,247,0.2); color: var(--accent-hot); }
+  .be { background: rgba(61,220,132,0.15); color: var(--green); }
+  .ei { background: rgba(247,247,247,0.1); color: var(--muted); }
+  td .hd { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+  .empty b { color: var(--accent-hot); display: block; font-family: var(--display); font-size: 1.1rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .error-box { background: rgba(255,90,90,0.08); border: 1px solid rgba(255,90,90,0.4); padding: 1.2rem; font-family: var(--mono); font-size: 0.75rem; color: var(--red); margin-bottom: 1.5rem; display: none; }
+  footer { text-align: center; font-family: var(--mono); font-size: 0.62rem; color: var(--muted); padding: 2rem 4vw; border-top: 1px solid rgba(247,247,247,0.1); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="fomo">fomo</span> × college <span class="tag">OPS DASHBOARD</span></div>
+  <div class="head-right">
+    <span><span class="live-dot"></span>LIVE · <span id="updated">—</span></span>
+    <button class="btn-refresh" id="refresh">Refresh</button>
+    <a class="back" href="./">← Portal</a>
+  </div>
+</header>
+
+<main>
+  <h1>The pipeline</h1>
+  <p class="sub">Every application, live from the board. Auto-refreshes every 60s. <b>Applicant emails stay in the private sheet.</b></p>
+  <div class="error-box" id="errbox"></div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n" id="k-total">—</div><div class="l">Total applications</div></div>
+    <div class="kpi"><div class="n" id="k-24h">—</div><div class="l">Last 24 hours</div></div>
+    <div class="kpi"><div class="n" id="k-schools">—</div><div class="l">Schools with apps</div></div>
+    <div class="kpi"><div class="n" id="k-top">—</div><div class="l">Hottest school</div></div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>By <span>school</span></h2>
+      <div id="bars"></div>
+      <div class="seat-split">
+        <div class="seat-chip"><b id="s-front">—</b>FRONT END</div>
+        <div class="seat-chip"><b id="s-back">—</b>BACK END</div>
+        <div class="seat-chip"><b id="s-either">—</b>EITHER</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Latest <span>applications</span></h2>
+      <div id="recent"></div>
+    </div>
+  </div>
+</main>
+
+<footer>fomo × college ops · built by Alex (github.com/agentalex2143) · data via published pipeline sheet</footer>
+
+<script>
+  var CSV_URL = 'https://docs.google.com/spreadsheets/d/1BzNaZS0XVq5HFV04ynQLGFwZPoYMg1blFpz6Q2IbY-s/pub?gid=2004011747&single=true&output=csv';
+
+  function parseCSV(text) {
+    var rows = [], row = [], cur = '', inQ = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (inQ) {
+        if (c === '"') { if (text[i+1] === '"') { cur += '"'; i++; } else inQ = false; }
+        else cur += c;
+      } else {
+        if (c === '"') inQ = true;
+        else if (c === ',') { row.push(cur); cur = ''; }
+        else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+        else if (c !== '\r') cur += c;
+      }
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  function esc(s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function timeAgo(d) {
+    var s = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (isNaN(s)) return '';
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.floor(s/60) + 'm ago';
+    if (s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+  }
+
+  function seatBadge(seat) {
+    if (/front/i.test(seat)) return '<span class="seat-b fe">Front end</span>';
+    if (/back/i.test(seat)) return '<span class="seat-b be">Back end</span>';
+    if (/either/i.test(seat)) return '<span class="seat-b ei">Either</span>';
+    return '<span class="seat-b ei">' + esc(seat || '—') + '</span>';
+  }
+
+  function render(apps) {
+    document.getElementById('k-total').textContent = apps.length;
+    var now = Date.now();
+    document.getElementById('k-24h').textContent = apps.filter(function (a) { return now - a.date.getTime() < 86400000; }).length;
+
+    var bySchool = {};
+    apps.forEach(function (a) { var k = a.school || 'Unknown'; bySchool[k] = (bySchool[k] || 0) + 1; });
+    var entries = Object.keys(bySchool).map(function (k) { return [k, bySchool[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+    document.getElementById('k-schools').textContent = entries.length;
+    document.getElementById('k-top').textContent = entries.length ? entries[0][0].replace('University of Illinois (UIUC)', 'UIUC').split(' ')[0] : '—';
+
+    var max = entries.length ? entries[0][1] : 1;
+    var bars = document.getElementById('bars');
+    if (!entries.length) {
+      bars.innerHTML = '<div class="empty"><b>No applications yet</b>The board is live. Go make noise.</div>';
+    } else {
+      bars.innerHTML = entries.map(function (e) {
+        var short = e[0].replace('University of Illinois (UIUC)', 'UIUC').replace(\" / my school isn't listed\", '');
+        return '<div class="bar-row"><span class="nm" title="' + esc(e[0]) + '">' + esc(short) + '</span>' +
+          '<span class="bar-track"><span class="bar-fill" style="width:' + Math.round(e[1] / max * 100) + '%"></span></span>' +
+          '<span class="ct">' + e[1] + '</span></div>';
+      }).join('');
+    }
+
+    var f = 0, b = 0, e2 = 0;
+    apps.forEach(function (a) {
+      if (/front/i.test(a.seat)) f++;
+      else if (/back/i.test(a.seat)) b++;
+      else if (/either/i.test(a.seat)) e2++;
+    });
+    document.getElementById('s-front').textContent = f;
+    document.getElementById('s-back').textContent = b;
+    document.getElementById('s-either').textContent = e2;
+
+    var recent = document.getElementById('recent');
+    if (!apps.length) {
+      recent.innerHTML = '<div class="empty"><b>Nothing yet</b>Applications appear here the second they land.</div>';
+    } else {
+      var latest = apps.slice().sort(function (x, y) { return y.date - x.date; }).slice(0, 15);
+      recent.innerHTML = '<table><tr><th>When</th><th>Who</th><th>School</th><th>Seat</th></tr>' +
+        latest.map(function (a) {
+          return '<tr><td class="t">' + esc(timeAgo(a.date)) + '</td>' +
+            '<td>' + esc(a.name || '—') + (a.handle ? '<br><span class="hd">' + esc(a.handle) + '</span>' : '') + '</td>' +
+            '<td>' + esc((a.school || '—').replace('University of Illinois (UIUC)', 'UIUC')) + '</td>' +
+            '<td>' + seatBadge(a.seat) + '</td></tr>';
+        }).join('') + '</table>';
+    }
+  }
+
+  function load() {
+    document.getElementById('updated').textContent = 'loading…';
+    fetch(CSV_URL + '&cb=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function (text) {
+        var rows = parseCSV(text).filter(function (r) { return r.length > 1 && r.some(function (c) { return c && c.trim(); }); });
+        rows.shift();
+        var apps = rows.map(function (r) {
+          return { date: new Date(r[0]), name: r[1], school: r[2], seat: r[3], handle: r[4] };
+        }).filter(function (a) { return a.name || a.school; });
+        render(apps);
+        document.getElementById('errbox').style.display = 'none';
+        document.getElementById('updated').textContent = new Date().toLocaleTimeString();
+      })
+      .catch(function (err) {
+        var eb = document.getElementById('errbox');
+        eb.style.display = 'block';
+        eb.textContent = 'Could not reach the pipeline (' + err.message + '). If this is a fresh setup, confirm the sheet tab is published to the web as CSV.';
+        document.getElementById('updated').textContent = 'offline';
+      });
+  }
+
+  document.getElementById('refresh').addEventListener('click', load);
+  setInterval(load, 60000);
+  load();
+</script>
+
+</body>
+</html>
