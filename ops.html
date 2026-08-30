@@ -184,7 +184,7 @@
       bars.innerHTML = '<div class="empty"><b>No applications yet</b>The board is live. Go make noise.</div>';
     } else {
       bars.innerHTML = entries.map(function (e) {
-        var short = e[0].replace('University of Illinois (UIUC)', 'UIUC').replace(\" / my school isn't listed\", '');
+        var short = e[0].replace('University of Illinois (UIUC)', 'UIUC').replace(" / my school isn't listed", "");
         return '<div class="bar-row"><span class="nm" title="' + esc(e[0]) + '">' + esc(short) + '</span>' +
           '<span class="bar-track"><span class="bar-fill" style="width:' + Math.round(e[1] / max * 100) + '%"></span></span>' +
           '<span class="ct">' + e[1] + '</span></div>';
