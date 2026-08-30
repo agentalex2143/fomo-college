@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<!--
+  fomo x college — campus chapter portal
+  Designed & built by Alex (github.com/agentalex2143), 2026.
+  All rights reserved. Not licensed for reuse without permission.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fomo × college — Campus Chapter Portal</title>
+<meta name="description" content="The fomo campus chapter network. See which schools are captured, which are open, and claim your campus.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #060510; --ink-2: #12111a;
+    --accent: #606af7; --accent-hot: #7c85ff;
+    --cream: #f7f7f7; --muted: #9aa0b8; --green: #3ddc84;
+    --display: 'Archivo Black', Impact, sans-serif;
+    --body: 'Space Grotesk', -apple-system, sans-serif;
+    --mono: 'Space Mono', 'Courier New', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  ::selection { background: var(--accent); color: var(--ink); }
+  body { background: var(--ink); color: var(--cream); font-family: var(--body); line-height: 1.6; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .marquee-track { animation: none !important; }
+  }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6,5,16,0.88); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(96,106,247,0.35);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 5vw;
+  }
+  .logo { font-family: var(--display); font-size: 1.15rem; }
+  .logo .fomo { color: var(--accent); }
+  .logo .chapter { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); display: block; letter-spacing: 2px; margin-top: -4px; }
+  .nav-links { display: flex; gap: 1.6rem; align-items: center; font-family: var(--mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+  .nav-cta { background: var(--accent); color: var(--cream); font-weight: 700; padding: 0.5rem 1.2rem; transform: skewX(-8deg); transition: background 0.2s; }
+  .nav-cta:hover { background: var(--accent-hot); }
+  .menu-btn { display: none; background: none; border: none; color: var(--cream); font-size: 1.6rem; cursor: pointer; }
+
+  .hero {
+    position: relative; min-height: 72vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 5vw;
+    background: radial-gradient(ellipse 60% 50% at 85% 15%, rgba(96,106,247,0.16), transparent), var(--ink);
+  }
+  .hero-ghost {
+    position: absolute; top: 6%; right: -2%;
+    font-family: var(--display); font-size: clamp(5rem, 15vw, 13rem);
+    color: transparent; -webkit-text-stroke: 1px rgba(96,106,247,0.22);
+    line-height: 0.9; user-select: none; pointer-events: none; transform: rotate(3deg);
+  }
+  .hero-kicker { font-family: var(--mono); color: var(--accent-hot); font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1.2rem; }
+  .hero-kicker::before { content: '///'; margin-right: 0.6rem; opacity: 0.6; }
+  .hero h1 { font-family: var(--display); font-size: clamp(2.6rem, 8vw, 6rem); line-height: 0.98; text-transform: uppercase; max-width: 14ch; }
+  .hero h1 .hl { color: var(--accent-hot); }
+  .hero-sub { margin-top: 1.5rem; max-width: 520px; color: var(--muted); font-size: 1.05rem; }
+  .hero-sub b { color: var(--cream); }
+  .hero-actions { margin-top: 2.2rem; display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: center; }
+  .btn-slant {
+    display: inline-block; font-family: var(--display); font-size: 1rem; text-transform: uppercase;
+    padding: 1rem 2.2rem; background: var(--accent); color: var(--cream); transform: skewX(-8deg);
+    box-shadow: 6px 6px 0 rgba(247,247,247,0.12); transition: transform 0.15s, background 0.2s;
+  }
+  .btn-slant:hover { transform: skewX(-8deg) translate(-2px,-2px); background: var(--accent-hot); }
+  .btn-slant span { display: inline-block; transform: skewX(8deg); }
+  .btn-wire { font-family: var(--mono); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--accent); padding-bottom: 0.2rem; }
+  .btn-wire:hover { color: var(--accent-hot); }
+
+  .hero-stats { margin-top: 3rem; display: flex; gap: 2.8rem; flex-wrap: wrap; }
+  .stat .num { font-family: var(--display); font-size: 1.9rem; color: var(--accent-hot); }
+  .stat .label { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  .marquee { background: var(--accent); color: var(--cream); overflow: hidden; white-space: nowrap; border-top: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(-1.2deg) scale(1.02); position: relative; z-index: 5; }
+  .marquee-track { display: inline-block; padding: 0.65rem 0; font-family: var(--display); font-size: 1rem; text-transform: uppercase; animation: scroll 24s linear infinite; }
+  .marquee-track span { margin: 0 1.2rem; }
+  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  section { padding: 5.5rem 5vw; max-width: 1240px; margin: 0 auto; }
+  .sec-head { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .sec-num { font-family: var(--mono); color: var(--accent-hot); font-size: 1rem; }
+  .sec-head h2 { font-family: var(--display); font-size: clamp(1.9rem, 5vw, 3.2rem); text-transform: uppercase; line-height: 1; }
+  .sec-head .tail { flex: 1; height: 3px; background: repeating-linear-gradient(90deg, var(--accent) 0 12px, transparent 12px 22px); min-width: 60px; align-self: center; }
+  .sec-sub { color: var(--muted); max-width: 640px; margin-bottom: 2.6rem; }
+  .sec-sub b { color: var(--cream); }
+
+  .legend { display: flex; gap: 1.6rem; margin-bottom: 2rem; font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; flex-wrap: wrap; }
+  .legend .dot { display: inline-block; width: 10px; height: 10px; margin-right: 0.4rem; }
+  .legend .cap .dot { background: var(--green); }
+  .legend .rec .dot { background: var(--accent); }
+
+  .school-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 1.2rem; }
+  .school {
+    background: var(--ink-2); border: 1px solid rgba(247,247,247,0.1);
+    padding: 1.3rem; position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .school:hover { transform: translateY(-4px); border-color: rgba(96,106,247,0.6); }
+  .school.captured { border: 1px solid rgba(61,220,132,0.45); }
+  .s-top { display: flex; gap: 0.9rem; align-items: center; }
+  .crest {
+    flex-shrink: 0; width: 54px; height: 54px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-size: 1rem; letter-spacing: -0.5px;
+    transform: rotate(-3deg); border: 2px solid rgba(255,255,255,0.18);
+  }
+  .s-name { font-family: var(--display); font-size: 0.98rem; text-transform: uppercase; line-height: 1.15; }
+  .s-loc { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 0.15rem; }
+  .s-status {
+    position: absolute; top: -0.6rem; right: 0.9rem;
+    font-family: var(--mono); font-size: 0.62rem; font-weight: 700;
+    padding: 0.12rem 0.6rem; text-transform: uppercase; letter-spacing: 1px;
+    transform: rotate(1.5deg); color: var(--ink);
+  }
+  .s-status.cap { background: var(--green); }
+  .s-status.rec { background: var(--accent-hot); }
+  .roster { margin-top: 1rem; border-top: 1px solid rgba(247,247,247,0.1); padding-top: 0.8rem; font-family: var(--mono); font-size: 0.72rem; }
+  .roster div { display: flex; justify-content: space-between; padding: 0.22rem 0; }
+  .roster .r-role { color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .roster .filled { color: var(--green); font-weight: 700; }
+  .roster .open { color: var(--accent-hot); font-weight: 700; }
+
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.4rem; }
+  .step { background: var(--ink-2); border: 1px solid rgba(247,247,247,0.1); padding: 1.8rem 1.5rem; position: relative; }
+  .step .n { font-family: var(--display); font-size: 2.6rem; color: transparent; -webkit-text-stroke: 1.5px var(--accent); line-height: 1; }
+  .step h3 { font-family: var(--display); font-size: 1.15rem; text-transform: uppercase; margin: 0.8rem 0 0.5rem; }
+  .step p { color: var(--muted); font-size: 0.92rem; }
+  .step p b { color: var(--cream); }
+
+  footer { border-top: 3px solid var(--accent); background: var(--ink-2); padding: 4rem 5vw 2.5rem; }
+  .foot-grid { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: start; }
+  .foot-word { font-family: var(--display); font-size: clamp(2rem, 6vw, 3.6rem); text-transform: uppercase; line-height: 0.95; }
+  .foot-word .fomo { color: var(--accent-hot); }
+  .foot-tag { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin-top: 1rem; letter-spacing: 1px; }
+  .apply-box h3 { font-family: var(--display); text-transform: uppercase; font-size: 1.2rem; margin-bottom: 0.6rem; }
+  .apply-box p { color: var(--muted); font-size: 0.92rem; margin-bottom: 1.4rem; }
+  .disclaimer { max-width: 1240px; margin: 3rem auto 0; padding-top: 1.5rem; border-top: 1px solid rgba(247,247,247,0.12); font-family: var(--mono); font-size: 0.68rem; color: var(--muted); line-height: 1.7; }
+  .disclaimer a { color: var(--accent-hot); }
+
+  @media (max-width: 860px) {
+    .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--ink); flex-direction: column; padding: 1.4rem 5vw; gap: 1.1rem; border-bottom: 1px solid rgba(96,106,247,0.35); }
+    .nav-links.open { display: flex; }
+    .menu-btn { display: block; }
+    .foot-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <span class="fomo">fomo</span> × college
+    <span class="chapter">CAMPUS CHAPTER NETWORK</span>
+  </div>
+  <button class="menu-btn" aria-label="Toggle menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+  <div class="nav-links">
+    <a href="#schools">Schools</a>
+    <a href="#how">How it works</a>
+    <a href="#apply" class="nav-cta">Claim your school</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-ghost" aria-hidden="true">TAKEOVER</div>
+  <div class="hero-kicker">The fomo campus chapter network</div>
+  <h1>Every campus.<br><span class="hl">Two operators.</span><br>One takeover.</h1>
+  <p class="hero-sub">fomo is putting a chapter on every major campus in the country — a <b>front-end ambassador</b> who runs the scene and a <b>back-end operator</b> who runs the machine. This is the map of what we have and where you fit.</p>
+  <div class="hero-actions">
+    <a class="btn-slant" href="#schools"><span>See the board</span></a>
+    <a class="btn-wire" href="#how">How it works</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="num">16</div><div class="label">Target schools</div></div>
+    <div class="stat"><div class="num">1</div><div class="label">Captured</div></div>
+    <div class="stat"><div class="num">31</div><div class="label">Open roles</div></div>
+  </div>
+</header>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Claim your school</span>·<span>Sponsored events</span>·<span>Free dinners</span>·<span>Campus leaderboards</span>·<span>Merch drops</span>·
+    <span>Claim your school</span>·<span>Sponsored events</span>·<span>Free dinners</span>·<span>Campus leaderboards</span>·<span>Merch drops</span>·
+  </div>
+</div>
+
+<section id="schools">
+  <div class="sec-head reveal">
+    <span class="sec-num">01</span>
+    <h2>The board</h2>
+    <div class="tail"></div>
+  </div>
+  <p class="sec-sub reveal">Every chapter runs on two seats: <b>front end</b> (the face — events, socials, the room) and <b>back end</b> (the engine — web, logistics, sign-ups). Green means captured. Purple means the seat is yours to take.</p>
+  <div class="legend reveal">
+    <span class="cap"><span class="dot"></span>Captured</span>
+    <span class="rec"><span class="dot"></span>Recruiting</span>
+  </div>
+  <div class="school-grid reveal">
+
+    <div class="school captured">
+      <span class="s-status cap">Captured</span>
+      <div class="s-top">
+        <div class="crest" style="background:#FF5F05;color:#13294B;">UIUC</div>
+        <div><div class="s-name">Illinois</div><div class="s-loc">Champaign-Urbana, IL</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="filled">FILLED — ALEX</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#041E42;color:#ffffff;">PSU</div>
+        <div><div class="s-name">Penn State</div><div class="s-loc">State College, PA</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#BB0000;color:#f7f7f7;">OSU</div>
+        <div><div class="s-name">Ohio State</div><div class="s-loc">Columbus, OH</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#8C1D40;color:#FFC627;">ASU</div>
+        <div><div class="s-name">Arizona State</div><div class="s-loc">Tempe, AZ</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#9E1B32;color:#f7f7f7;">BAMA</div>
+        <div><div class="s-name">Alabama</div><div class="s-loc">Tuscaloosa, AL</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#00274C;color:#FFCB05;">UM</div>
+        <div><div class="s-name">Michigan</div><div class="s-loc">Ann Arbor, MI</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#C5050C;color:#f7f7f7;">UW</div>
+        <div><div class="s-name">Wisconsin</div><div class="s-loc">Madison, WI</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#782F40;color:#CEB888;">FSU</div>
+        <div><div class="s-name">Florida State</div><div class="s-loc">Tallahassee, FL</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#BF5700;color:#f7f7f7;">UT</div>
+        <div><div class="s-name">Texas</div><div class="s-loc">Austin, TX</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#BA0C2F;color:#f7f7f7;">UGA</div>
+        <div><div class="s-name">Georgia</div><div class="s-loc">Athens, GA</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#461D7C;color:#FDD023;">LSU</div>
+        <div><div class="s-name">LSU</div><div class="s-loc">Baton Rouge, LA</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#CE1126;color:#14213D;">UM</div>
+        <div><div class="s-name">Ole Miss</div><div class="s-loc">Oxford, MS</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#990000;color:#f7f7f7;">IU</div>
+        <div><div class="s-name">Indiana</div><div class="s-loc">Bloomington, IN</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#002855;color:#EAAA00;">WVU</div>
+        <div><div class="s-name">West Virginia</div><div class="s-loc">Morgantown, WV</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#F47321;color:#005030;">UM</div>
+        <div><div class="s-name">Miami</div><div class="s-loc">Coral Gables, FL</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+    <div class="school">
+      <span class="s-status rec">Recruiting</span>
+      <div class="s-top">
+        <div class="crest" style="background:#A6192E;color:#f7f7f7;">SDSU</div>
+        <div><div class="s-name">San Diego State</div><div class="s-loc">San Diego, CA</div></div>
+      </div>
+      <div class="roster">
+        <div><span class="r-role">Back end</span><span class="open">OPEN</span></div>
+        <div><span class="r-role">Front end</span><span class="open">OPEN</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="how">
+  <div class="sec-head reveal">
+    <span class="sec-num">02</span>
+    <h2>How it works</h2>
+    <div class="tail"></div>
+  </div>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="n">01</div>
+      <h3>Claim your school</h3>
+      <p>Every campus gets two seats. <b>Front end</b> is the face — events, socials, the room. <b>Back end</b> is the engine — web, sign-ups, logistics. Apply for the open seat at your school.</p>
+    </div>
+    <div class="step">
+      <div class="n">02</div>
+      <h3>Run the playbook</h3>
+      <p>Launch dinner, trading nights, a semester social — <b>sponsored by fomo.</b> Your chapter gets a site, a leaderboard, and a budget to make noise on campus.</p>
+    </div>
+    <div class="step">
+      <div class="n">03</div>
+      <h3>Build the network</h3>
+      <p>Chapters feed the map. Grow your campus community, show up on the board, and be first in line as the program scales to the next wave of schools.</p>
+    </div>
+  </div>
+</section>
+
+<footer id="apply">
+  <div class="foot-grid">
+    <div>
+      <div class="foot-word"><span class="fomo">fomo</span> ×<br>college</div>
+      <p class="foot-tag">CAMPUS CHAPTER NETWORK · EST. 2026<br>DON'T MISS OUT. IT'S IN THE NAME.</p>
+    </div>
+    <div class="apply-box">
+      <h3>Claim your school</h3>
+      <p>Tell us your campus, which seat you want (front end / back end), and why you're the one. We move fast.</p>
+      <a class="btn-slant" href="mailto:fomo.college@gmail.com?subject=Claiming%20my%20school"><span>Apply now</span></a>
+    </div>
+  </div>
+  <p class="disclaimer">
+    fomo × college chapters are student-run communities. School names and colors are used for identification only; this network is not affiliated with, endorsed by, or sponsored by any university. Chapter status board is maintained by chapter operators.
+    Cryptocurrency trading involves substantial risk, including possible loss of principal. Nothing on this site is financial advice.
+    fomo is a product of FOMO Labs — see <a href="https://fomo.family" target="_blank" rel="noopener">fomo.family</a> for official information.
+    Portal designed &amp; built by <a href="https://github.com/agentalex2143" target="_blank" rel="noopener">Alex</a>. © 2026 fomo × college network.
+  </p>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  document.querySelectorAll('.nav-links a').forEach(a =>
+    a.addEventListener('click', () => document.querySelector('.nav-links').classList.remove('open')));
+</script>
+
+</body>
+</html>
