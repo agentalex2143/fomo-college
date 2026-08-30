@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<!--
+  fomo x college — application (custom front end for the pipeline)
+  Designed & built by Alex (github.com/agentalex2143), 2026. All rights reserved.
+  Submits to the Google Forms response endpoint; the pipeline sheet and ops
+  dashboard receive data exactly as if submitted through the native form.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fomo × college — Claim Your Seat</title>
+<meta name="description" content="Apply for a front-end or back-end seat at your campus. We review fast.">
+<meta name="theme-color" content="#606af7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23606af7'/%3E%3Ctext x='32' y='46' font-size='40' font-family='Arial Black,Arial' font-weight='900' fill='%23f7f7f7' text-anchor='middle'%3Ef%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #060510; --ink-2: #12111a;
+    --accent: #606af7; --accent-hot: #7c85ff;
+    --cream: #f7f7f7; --muted: #9aa0b8; --green: #3ddc84; --red: #ff5a5a;
+    --display: 'Archivo Black', Impact, sans-serif;
+    --body: 'Space Grotesk', -apple-system, sans-serif;
+    --mono: 'Space Mono', 'Courier New', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  ::selection { background: var(--accent); color: var(--ink); }
+  body { background: var(--ink); color: var(--cream); font-family: var(--body); line-height: 1.6; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6,5,16,0.88); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(96,106,247,0.35);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 5vw;
+  }
+  .logo { font-family: var(--display); font-size: 1.15rem; }
+  .logo .fomo { color: var(--accent); }
+  .logo .chapter { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); display: block; letter-spacing: 2px; margin-top: -4px; }
+  .nav-links { display: flex; gap: 1.6rem; font-family: var(--mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+
+  main { max-width: 720px; margin: 0 auto; padding: 3.5rem 5vw 5rem; }
+  .kicker { font-family: var(--mono); color: var(--accent-hot); font-size: 0.8rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1rem; }
+  .kicker::before { content: '///'; margin-right: 0.6rem; opacity: 0.6; }
+  h1 { font-family: var(--display); font-size: clamp(2rem, 6vw, 3.2rem); text-transform: uppercase; line-height: 1; margin-bottom: 0.6rem; }
+  h1 span { color: var(--accent-hot); }
+  .sub { color: var(--muted); margin-bottom: 2.5rem; }
+
+  .field { margin-bottom: 1.8rem; }
+  .flabel { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); display: block; margin-bottom: 0.55rem; }
+  .flabel .req { color: var(--accent-hot); }
+  input[type=text], input[type=email], select, textarea {
+    width: 100%; background: var(--ink-2); border: 1px solid rgba(247,247,247,0.18);
+    color: var(--cream); font-family: var(--body); font-size: 1rem;
+    padding: 0.85rem 1rem; outline: none; border-radius: 0;
+    transition: border-color 0.2s;
+    -webkit-appearance: none; appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent-hot); }
+  textarea { min-height: 120px; resize: vertical; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c85ff' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 1rem center;
+  }
+  select option { background: var(--ink-2); color: var(--cream); }
+
+  .choice-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .chip {
+    font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.5px;
+    border: 1px solid rgba(247,247,247,0.22); padding: 0.55rem 1rem;
+    transition: all 0.15s; user-select: none;
+  }
+  .chip:hover { border-color: var(--accent-hot); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: var(--cream); font-weight: 700; }
+
+  .seat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; }
+  .seat-card {
+    text-align: left; border: 1px solid rgba(247,247,247,0.18); padding: 1.1rem 1.2rem;
+    transition: all 0.15s; background: var(--ink-2);
+  }
+  .seat-card:hover { border-color: var(--accent-hot); }
+  .seat-card.on { border-color: var(--accent); box-shadow: 5px 5px 0 rgba(96,106,247,0.35); }
+  .seat-card b { font-family: var(--display); font-size: 0.95rem; text-transform: uppercase; display: block; }
+  .seat-card span { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+  .seat-card.on b { color: var(--accent-hot); }
+
+  .err { font-family: var(--mono); font-size: 0.72rem; color: var(--red); margin-top: 0.4rem; display: none; }
+  .field.bad .err { display: block; }
+  .field.bad input, .field.bad select { border-color: var(--red); }
+  .field.bad .seat-card, .field.bad .chip { border-color: rgba(255,90,90,0.6); }
+
+  .btn-slant {
+    display: inline-block; font-family: var(--display); font-size: 1.05rem; text-transform: uppercase;
+    padding: 1rem 2.6rem; background: var(--accent); color: var(--cream); transform: skewX(-8deg);
+    box-shadow: 6px 6px 0 rgba(247,247,247,0.12); transition: transform 0.15s, background 0.2s;
+    margin-top: 0.5rem;
+  }
+  .btn-slant:hover { transform: skewX(-8deg) translate(-2px,-2px); background: var(--accent-hot); }
+  .btn-slant span { display: inline-block; transform: skewX(8deg); }
+  .btn-slant:disabled { opacity: 0.5; cursor: wait; }
+  .form-note { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-top: 1.2rem; }
+
+  #done { display: none; text-align: center; padding: 4rem 0; }
+  #done .big { font-family: var(--display); font-size: clamp(2rem, 6vw, 3rem); text-transform: uppercase; line-height: 1; }
+  #done .big span { color: var(--green); }
+  #done p { color: var(--muted); margin: 1.2rem auto 2rem; max-width: 40ch; }
+  #done .row { display: flex; gap: 1.4rem; justify-content: center; flex-wrap: wrap; }
+  .btn-wire { font-family: var(--mono); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--accent); padding-bottom: 0.2rem; }
+  .btn-wire:hover { color: var(--accent-hot); }
+
+  footer { border-top: 1px solid rgba(247,247,247,0.12); padding: 2rem 5vw; text-align: center; font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
+  .fallback { display: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="./">
+    <span class="fomo">fomo</span> × college
+    <span class="chapter">CAMPUS CHAPTER NETWORK</span>
+  </a>
+  <div class="nav-links">
+    <a href="./#schools">The board</a>
+    <a href="benefits.html">Why join</a>
+  </div>
+</nav>
+
+<main>
+  <div id="formview">
+    <div class="kicker">Application</div>
+    <h1>Claim <span>your seat.</span></h1>
+    <p class="sub">Two minutes. We move fast — if it's a fit, you'll hear back quick.</p>
+
+    <div class="field" id="f-name">
+      <label class="flabel" for="i-name">Full name <span class="req">*</span></label>
+      <input type="text" id="i-name" autocomplete="name">
+      <div class="err">We need your name.</div>
+    </div>
+
+    <div class="field" id="f-school">
+      <label class="flabel" for="i-school">School <span class="req">*</span></label>
+      <select id="i-school"><option value="">Pick your school…</option></select>
+      <div class="err">Pick your school (or choose Other).</div>
+    </div>
+
+    <div class="field" id="f-school-other" style="display:none;">
+      <label class="flabel" for="i-school-other">Your school</label>
+      <input type="text" id="i-school-other" placeholder="Type your school">
+    </div>
+
+    <div class="field" id="f-year">
+      <label class="flabel">What year are you? <span class="req">*</span></label>
+      <div class="choice-row" id="years"></div>
+      <div class="err">Pick your year.</div>
+    </div>
+
+    <div class="field" id="f-seat">
+      <label class="flabel">Which seat are you claiming? <span class="req">*</span></label>
+      <div class="seat-cards" id="seats"></div>
+      <div class="err">Pick a seat.</div>
+    </div>
+
+    <div class="field" id="f-interests">
+      <label class="flabel">What are you most interested in doing?</label>
+      <div class="choice-row" id="interests"></div>
+    </div>
+
+    <div class="field" id="f-handle">
+      <label class="flabel" for="i-handle">Instagram / TikTok / X / LinkedIn</label>
+      <input type="text" id="i-handle" placeholder="@yourhandle">
+    </div>
+
+    <div class="field" id="f-email">
+      <label class="flabel" for="i-email">Email <span class="req">*</span></label>
+      <input type="email" id="i-email" autocomplete="email" placeholder="you@school.edu">
+      <div class="err">We need a real email to reach you.</div>
+    </div>
+
+    <div class="field" id="f-why">
+      <label class="flabel" for="i-why">Why you? What would you do in your first month?</label>
+      <textarea id="i-why" placeholder="Sell us. Short is fine."></textarea>
+    </div>
+
+    <button class="btn-slant" id="submitBtn" type="button"><span>Submit application</span></button>
+    <p class="form-note">Applications land in the pipeline instantly. Emails are never shown publicly.</p>
+  </div>
+
+  <div id="done">
+    <div class="big">You're in <span>the pipeline.</span></div>
+    <p>Application received. If it's a fit, you'll hear from the program fast. Tell your people — seats go to whoever moves first.</p>
+    <div class="row">
+      <a class="btn-slant" href="./#schools"><span>Back to the board</span></a>
+      <a class="btn-wire" href="benefits.html">Why this is worth it</a>
+    </div>
+  </div>
+</main>
+
+<footer>fomo × college · student-run · not affiliated with any university · crypto involves risk · built by Alex (github.com/agentalex2143)</footer>
+
+<iframe name="gframe" id="gframe" class="fallback"></iframe>
+<form id="gform" class="fallback" method="POST" target="gframe"
+  action="https://docs.google.com/forms/d/e/1FAIpQLSdlmxVc8TELoGZhLt6yfBDxXu_3C6nfipk_x4SlVLtFaeJqNw/formResponse"></form>
+
+<script>
+  var E = { name: 'entry.1334303530', school: 'entry.1267063458', schoolOther: 'entry.707386858',
+            year: 'entry.853538279', seat: 'entry.878991775', interests: 'entry.927789382',
+            handle: 'entry.1684029759', email: 'entry.1085746426', why: 'entry.1745956921' };
+  var SCHOOLS = ['University of Illinois (UIUC)','Penn State','Ohio State','Arizona State','Alabama','Michigan','Wisconsin','Florida State','Texas','Georgia','LSU','Ole Miss','Indiana','West Virginia','Miami','San Diego State','Florida','Tennessee','South Carolina','USC','Other: Type it in below'];
+  var YEARS = ['Freshman','Sophomore','Junior','Senior','Grad student'];
+  var SEATS = [
+    { v: 'Front end — the face (events, socials, the room)', t: 'Front end', d: 'the face — events, socials, the room' },
+    { v: 'Back end — the engine (web, sign-ups, logistics)', t: 'Back end', d: 'the engine — web, sign-ups, logistics' },
+    { v: 'Either — put me where I fit', t: 'Either', d: 'put me where I fit' }
+  ];
+  var INTERESTS = ['Hosting events','Building a campus community','Making content','Recruiting other students','Partnering with clubs/fraternities/sororities','Becoming a campus lead','All of the above'];
+
+  var sel = document.getElementById('i-school');
+  SCHOOLS.forEach(function (s) { var o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+  sel.addEventListener('change', function () {
+    document.getElementById('f-school-other').style.display = sel.value.indexOf('Other') === 0 ? 'block' : 'none';
+  });
+
+  var pickedYear = null, pickedSeat = null, pickedInterests = [];
+  var yr = document.getElementById('years');
+  YEARS.forEach(function (y) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = y;
+    b.addEventListener('click', function () {
+      pickedYear = y;
+      [].forEach.call(yr.children, function (c) { c.classList.remove('on'); });
+      b.classList.add('on');
+    });
+    yr.appendChild(b);
+  });
+
+  var st = document.getElementById('seats');
+  SEATS.forEach(function (s) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'seat-card';
+    b.innerHTML = '<b>' + s.t + '</b><span>' + s.d + '</span>';
+    b.addEventListener('click', function () {
+      pickedSeat = s.v;
+      [].forEach.call(st.children, function (c) { c.classList.remove('on'); });
+      b.classList.add('on');
+    });
+    st.appendChild(b);
+  });
+
+  var it = document.getElementById('interests');
+  INTERESTS.forEach(function (n) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = n;
+    b.addEventListener('click', function () {
+      var i = pickedInterests.indexOf(n);
+      if (i > -1) { pickedInterests.splice(i, 1); b.classList.remove('on'); }
+      else { pickedInterests.push(n); b.classList.add('on'); }
+    });
+    it.appendChild(b);
+  });
+
+  var params = new URLSearchParams(location.search);
+  var preSchool = params.get(E.school);
+  if (preSchool && SCHOOLS.indexOf(preSchool) > -1) sel.value = preSchool;
+  var preSeat = params.get(E.seat);
+  if (preSeat) SEATS.forEach(function (s, i) { if (s.v === preSeat) st.children[i].click(); });
+
+  function bad(id, isBad) { document.getElementById(id).classList.toggle('bad', isBad); return isBad; }
+
+  document.getElementById('submitBtn').addEventListener('click', function () {
+    var name = document.getElementById('i-name').value.trim();
+    var school = sel.value;
+    var email = document.getElementById('i-email').value.trim();
+    var anyBad = false;
+    anyBad = bad('f-name', !name) || anyBad;
+    anyBad = bad('f-school', !school) || anyBad;
+    anyBad = bad('f-year', !pickedYear) || anyBad;
+    anyBad = bad('f-seat', !pickedSeat) || anyBad;
+    var at = email.indexOf('@');
+    var emailOk = at > 0 && email.indexOf('.', at) > at + 1;
+    anyBad = bad('f-email', !emailOk) || anyBad;
+    if (anyBad) return;
+
+    var f = document.getElementById('gform');
+    f.innerHTML = '';
+    function add(k, v) { var i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); }
+    add(E.name, name);
+    add(E.school, school);
+    var other = document.getElementById('i-school-other').value.trim();
+    if (other) add(E.schoolOther, other);
+    add(E.year, pickedYear);
+    add(E.seat, pickedSeat);
+    pickedInterests.forEach(function (n) { add(E.interests, n); });
+    var handle = document.getElementById('i-handle').value.trim();
+    if (handle) add(E.handle, handle);
+    add(E.email, email);
+    var why = document.getElementById('i-why').value.trim();
+    if (why) add(E.why, why);
+
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.firstChild.textContent = 'Sending…';
+    var fired = false;
+    function finish() {
+      if (fired) return; fired = true;
+      document.getElementById('formview').style.display = 'none';
+      document.getElementById('done').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+    document.getElementById('gframe').addEventListener('load', finish);
+    setTimeout(finish, 2500);
+    f.submit();
+  });
+</script>
+
+</body>
+</html>
