@@ -4,6 +4,11 @@
   Designed & built by Alex (github.com/agentalex2143), 2026. All rights reserved.
   Submits to the Google Forms response endpoint; the pipeline sheet and ops
   dashboard receive data exactly as if submitted through the native form.
+
+  v2 — recruiter tracking. A ?ref=code on the inbound link is shown back to the
+  applicant and submitted with the application. Set E.ref below to the entry ID
+  of the "Referral code" question once you've added it to the form; until then
+  ref codes are simply ignored and everything else works unchanged.
 -->
 <html lang="en">
 <head>
@@ -49,6 +54,14 @@
   h1 { font-family: var(--display); font-size: clamp(2rem, 6vw, 3.2rem); text-transform: uppercase; line-height: 1; margin-bottom: 0.6rem; }
   h1 span { color: var(--accent-hot); }
   .sub { color: var(--muted); margin-bottom: 2.5rem; }
+
+  .refnote {
+    display: none; font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+    border-left: 2px solid var(--accent); padding: 0.5rem 0 0.5rem 0.8rem;
+    margin: -1.6rem 0 2.5rem; letter-spacing: 0.5px;
+  }
+  .refnote.on { display: block; }
+  .refnote b { color: var(--accent-hot); }
 
   .field { margin-bottom: 1.8rem; }
   .flabel { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); display: block; margin-bottom: 0.55rem; }
@@ -134,6 +147,7 @@
     <div class="kicker">Application</div>
     <h1>Claim <span>your seat.</span></h1>
     <p class="sub">Two minutes. We move fast — if it's a fit, you'll hear back quick.</p>
+    <p class="refnote" id="refnote"></p>
 
     <div class="field" id="f-name">
       <label class="flabel" for="i-name">Full name <span class="req">*</span></label>
@@ -206,9 +220,13 @@
   action="https://docs.google.com/forms/d/e/1FAIpQLSdlmxVc8TELoGZhLt6yfBDxXu_3C6nfipk_x4SlVLtFaeJqNw/formResponse"></form>
 
 <script>
+  /* ref: entry ID of the "Referral code" short-answer question on the form.
+     Leave it '' until that question exists — ref codes are then simply not
+     submitted, and nothing else changes. */
   var E = { name: 'entry.1334303530', school: 'entry.1267063458', schoolOther: 'entry.707386858',
             year: 'entry.853538279', seat: 'entry.878991775', interests: 'entry.927789382',
-            handle: 'entry.1684029759', email: 'entry.1085746426', why: 'entry.1745956921' };
+            handle: 'entry.1684029759', email: 'entry.1085746426', why: 'entry.1745956921',
+            ref: 'entry.468690671' };
   var SCHOOLS = ['University of Illinois (UIUC)','Penn State','Ohio State','Arizona State','Alabama','Michigan','Wisconsin','Florida State','Texas','Georgia','LSU','Ole Miss','Indiana','West Virginia','Miami','San Diego State','Florida','Tennessee','South Carolina','USC','Other: Type it in below'];
   var YEARS = ['Freshman','Sophomore','Junior','Senior','Grad student'];
   var SEATS = [
@@ -265,6 +283,15 @@
   var preSeat = params.get(E.seat);
   if (preSeat) SEATS.forEach(function (s, i) { if (s.v === preSeat) st.children[i].click(); });
 
+  /* Recruiter code. Shown back to the applicant so the credit is visible and
+     honest rather than a silent tracking parameter. */
+  var REF = (params.get('ref') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24);
+  if (REF) {
+    var rn = document.getElementById('refnote');
+    rn.innerHTML = 'Referred by <b>' + REF.replace(/[&<>"]/g, '') + '</b> — they get credit for bringing you in.';
+    rn.classList.add('on');
+  }
+
   function bad(id, isBad) { document.getElementById(id).classList.toggle('bad', isBad); return isBad; }
 
   document.getElementById('submitBtn').addEventListener('click', function () {
@@ -296,6 +323,7 @@
     add(E.email, email);
     var why = document.getElementById('i-why').value.trim();
     if (why) add(E.why, why);
+    if (REF && E.ref) add(E.ref, REF);
 
     var btn = document.getElementById('submitBtn');
     btn.disabled = true;
