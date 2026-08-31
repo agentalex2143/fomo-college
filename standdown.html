@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<!--
+  fomo x college — seat handoff / stand-down form (INTERNAL)
+  Designed & built by Alex (github.com/agentalex2143), 2026. All rights reserved.
+
+  Not linked from any public page. Share the URL directly with chapter operators.
+  noindex so it stays out of search.
+
+  SETUP: fill in FORM_ACTION and the Q entry IDs below from the second Google
+  Form ("fomo x college — seat changes"). Until those are filled the page shows
+  a setup notice instead of a submit button — it never fails silently.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fomo × college — Seat Handoff</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#606af7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23606af7'/%3E%3Ctext x='32' y='46' font-size='40' font-family='Arial Black,Arial' font-weight='900' fill='%23f7f7f7' text-anchor='middle'%3Ef%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #060510; --ink-2: #12111a;
+    --accent: #606af7; --accent-hot: #7c85ff;
+    --cream: #f7f7f7; --muted: #9aa0b8; --green: #3ddc84; --red: #ff5a5a; --amber: #ffc861;
+    --display: 'Archivo Black', Impact, sans-serif;
+    --body: 'Space Grotesk', -apple-system, sans-serif;
+    --mono: 'Space Mono', 'Courier New', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  ::selection { background: var(--accent); color: var(--ink); }
+  body { background: var(--ink); color: var(--cream); font-family: var(--body); line-height: 1.6; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6,5,16,0.88); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(96,106,247,0.35);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 5vw;
+  }
+  .logo { font-family: var(--display); font-size: 1.15rem; }
+  .logo .fomo { color: var(--accent); }
+  .logo .chapter { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); display: block; letter-spacing: 2px; margin-top: -4px; }
+  .nav-links { display: flex; gap: 1.6rem; font-family: var(--mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+
+  main { max-width: 680px; margin: 0 auto; padding: 3.5rem 5vw 5rem; }
+  .kicker { font-family: var(--mono); color: var(--accent-hot); font-size: 0.8rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1rem; }
+  .kicker::before { content: '///'; margin-right: 0.6rem; opacity: 0.6; }
+  h1 { font-family: var(--display); font-size: clamp(2rem, 6vw, 3rem); text-transform: uppercase; line-height: 1; margin-bottom: 0.7rem; }
+  h1 span { color: var(--accent-hot); }
+  .sub { color: var(--muted); margin-bottom: 2.5rem; }
+  .sub b { color: var(--cream); }
+
+  .setup-notice {
+    display: none; background: rgba(255,200,97,0.08); border: 1px solid rgba(255,200,97,0.45);
+    padding: 1.2rem 1.4rem; font-family: var(--mono); font-size: 0.75rem; color: var(--amber);
+    line-height: 1.8; margin-bottom: 2rem;
+  }
+  .setup-notice.on { display: block; }
+  .setup-notice b { color: var(--cream); }
+
+  .field { margin-bottom: 1.8rem; }
+  .flabel { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); display: block; margin-bottom: 0.55rem; }
+  .flabel .req { color: var(--accent-hot); }
+  .fhint { font-family: var(--mono); font-size: 0.66rem; color: var(--muted); opacity: 0.8; display: block; margin-bottom: 0.55rem; text-transform: none; letter-spacing: 0; }
+  input[type=text], input[type=email], select, textarea {
+    width: 100%; background: var(--ink-2); border: 1px solid rgba(247,247,247,0.18);
+    color: var(--cream); font-family: var(--body); font-size: 1rem;
+    padding: 0.85rem 1rem; outline: none; border-radius: 0;
+    transition: border-color 0.2s; -webkit-appearance: none; appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent-hot); }
+  textarea { min-height: 110px; resize: vertical; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c85ff' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 1rem center;
+  }
+  select option { background: var(--ink-2); color: var(--cream); }
+
+  .choice-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .chip {
+    font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.5px;
+    border: 1px solid rgba(247,247,247,0.22); padding: 0.55rem 1rem; transition: all 0.15s; user-select: none;
+  }
+  .chip:hover { border-color: var(--accent-hot); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: var(--cream); font-weight: 700; }
+
+  .reason-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem; }
+  .reason-card {
+    text-align: left; border: 1px solid rgba(247,247,247,0.18); padding: 1.1rem 1.2rem;
+    transition: all 0.15s; background: var(--ink-2);
+  }
+  .reason-card:hover { border-color: var(--accent-hot); }
+  .reason-card.on { border-color: var(--accent); box-shadow: 5px 5px 0 rgba(96,106,247,0.35); }
+  .reason-card b { font-family: var(--display); font-size: 0.9rem; text-transform: uppercase; display: block; }
+  .reason-card span { font-family: var(--mono); font-size: 0.66rem; color: var(--muted); }
+  .reason-card.on b { color: var(--accent-hot); }
+
+  .err { font-family: var(--mono); font-size: 0.72rem; color: var(--red); margin-top: 0.4rem; display: none; }
+  .field.bad .err { display: block; }
+  .field.bad input, .field.bad select { border-color: var(--red); }
+  .field.bad .reason-card, .field.bad .chip { border-color: rgba(255,90,90,0.6); }
+
+  .btn-slant {
+    display: inline-block; font-family: var(--display); font-size: 1.05rem; text-transform: uppercase;
+    padding: 1rem 2.6rem; background: var(--accent); color: var(--cream); transform: skewX(-8deg);
+    box-shadow: 6px 6px 0 rgba(247,247,247,0.12); transition: transform 0.15s, background 0.2s; margin-top: 0.5rem;
+  }
+  .btn-slant:hover { transform: skewX(-8deg) translate(-2px,-2px); background: var(--accent-hot); }
+  .btn-slant span { display: inline-block; transform: skewX(8deg); }
+  .btn-slant:disabled { opacity: 0.4; cursor: not-allowed; }
+  .form-note { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-top: 1.2rem; line-height: 1.8; }
+
+  #done { display: none; text-align: center; padding: 4rem 0; }
+  #done .big { font-family: var(--display); font-size: clamp(1.8rem, 5vw, 2.6rem); text-transform: uppercase; line-height: 1; }
+  #done .big span { color: var(--green); }
+  #done p { color: var(--muted); margin: 1.2rem auto 2rem; max-width: 42ch; }
+
+  footer { border-top: 1px solid rgba(247,247,247,0.12); padding: 2rem 5vw; text-align: center; font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
+  .fallback { display: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="./">
+    <span class="fomo">fomo</span> × college
+    <span class="chapter">SEAT HANDOFF</span>
+  </a>
+  <div class="nav-links"><a href="./#schools">The board</a></div>
+</nav>
+
+<main>
+  <div id="formview">
+    <div class="kicker">Internal</div>
+    <h1>Hand off <span>the seat.</span></h1>
+    <p class="sub">Life happens — classes get heavy, priorities move, a seat stops fitting. <b>Telling us early is the helpful thing to do</b>, not the awkward one. It takes a minute and it means your campus doesn't go dark.</p>
+
+    <div class="setup-notice" id="setup">
+      <b>This form isn't wired up yet.</b><br>
+      Fill in <code>FORM_ACTION</code> and the <code>Q</code> entry IDs at the bottom of
+      <code>standdown.html</code> from the seat-changes Google Form. Until then nothing here submits.
+    </div>
+
+    <div class="field" id="f-name">
+      <label class="flabel" for="i-name">Your name <span class="req">*</span></label>
+      <input type="text" id="i-name" autocomplete="name">
+      <div class="err">We need your name to find your seat.</div>
+    </div>
+
+    <div class="field" id="f-school">
+      <label class="flabel" for="i-school">School <span class="req">*</span></label>
+      <select id="i-school"><option value="">Pick your school…</option></select>
+      <div class="err">Pick your school.</div>
+    </div>
+
+    <div class="field" id="f-seat">
+      <label class="flabel">Which seat do you hold? <span class="req">*</span></label>
+      <div class="choice-row" id="seats"></div>
+      <div class="err">Pick your seat.</div>
+    </div>
+
+    <div class="field" id="f-change">
+      <label class="flabel">What's changing? <span class="req">*</span></label>
+      <div class="reason-cards" id="changes"></div>
+      <div class="err">Pick one.</div>
+    </div>
+
+    <div class="field" id="f-successor" style="display:none;">
+      <label class="flabel" for="i-successor">Who's taking over?</label>
+      <span class="fhint">Name and handle if you've already lined someone up.</span>
+      <input type="text" id="i-successor" placeholder="Name · @handle">
+    </div>
+
+    <div class="field" id="f-why">
+      <label class="flabel" for="i-why">The honest reason</label>
+      <span class="fhint">Straight answers here make the program better. Nobody's getting talked out of anything.</span>
+      <textarea id="i-why" placeholder="Too much on my plate this semester…"></textarea>
+    </div>
+
+    <div class="field" id="f-notes">
+      <label class="flabel" for="i-notes">What should the next person know?</label>
+      <span class="fhint">Contacts, half-finished things, venues, group chats, anything that would otherwise get lost.</span>
+      <textarea id="i-notes" placeholder="The launch dinner venue contact is…"></textarea>
+    </div>
+
+    <div class="field" id="f-email">
+      <label class="flabel" for="i-email">Email</label>
+      <span class="fhint">Optional — only if you want a reply.</span>
+      <input type="email" id="i-email" autocomplete="email" placeholder="you@school.edu">
+    </div>
+
+    <button class="btn-slant" id="submitBtn" type="button"><span>Send it</span></button>
+    <p class="form-note">
+      This goes to the chapter ops log — it is not posted publicly and it isn't announced anywhere.<br>
+      Your seat comes off the board once the change is processed.
+    </p>
+  </div>
+
+  <div id="done">
+    <div class="big">Logged. <span>No hard feelings.</span></div>
+    <p>Thanks for telling us instead of going quiet — that's the part that actually helps. If there's anything to sort out, someone will reach out. The door isn't closed.</p>
+    <a class="btn-slant" href="./"><span>Back to the board</span></a>
+  </div>
+</main>
+
+<footer>fomo × college · internal ops · built by Alex (github.com/agentalex2143)</footer>
+
+<iframe name="qframe" id="qframe" class="fallback"></iframe>
+<form id="qform" class="fallback" method="POST" target="qframe"></form>
+
+<script>
+  /* ---------------- SETUP: fill these in ----------------
+     FORM_ACTION — the seat-changes form's response endpoint. Take the form's
+                   share link and swap the trailing /viewform for /formResponse.
+     Q           — entry IDs for each question, in the same order as this page.
+                   Get them from the form's "Get pre-filled link".
+     Leave any of them '' and the page shows the setup notice instead of
+     submitting. See VETTING-AND-FACES.md for the walkthrough.            */
+  var FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScDKTqgCIQLyLBkskvv860n4MxaW9xFJC_RhTiEB3TC6iLu8Q/formResponse';
+  var Q = {
+    name:      'entry.233049531',
+    school:    'entry.885673469',
+    seat:      'entry.47586729',
+    change:    'entry.633744765',
+    successor: 'entry.1326266471',
+    why:       'entry.1877296404',
+    notes:     'entry.1525782878',
+    email:     'entry.576221743'
+  };
+  /* ------------------------------------------------------ */
+
+  var SCHOOLS = ['University of Illinois (UIUC)','Penn State','Ohio State','Arizona State','Alabama','Michigan','Wisconsin','Florida State','Texas','Georgia','LSU','Ole Miss','Indiana','West Virginia','Miami','San Diego State','Florida','Tennessee','South Carolina','USC','Other'];
+  var SEATS = ['Front end', 'Back end'];
+  var CHANGES = [
+    { v: 'Stepping back entirely', t: 'Stepping back', d: 'done with the seat' },
+    { v: 'Handing off to someone specific', t: 'Handing off', d: 'I have a replacement' },
+    { v: 'Taking a break — want back later', t: 'Pausing', d: 'want back later' },
+    { v: 'Switching seats', t: 'Switching', d: 'front ↔ back' }
+  ];
+
+  var configured = !!FORM_ACTION && !!Q.name && !!Q.school && !!Q.seat && !!Q.change;
+
+  var sel = document.getElementById('i-school');
+  SCHOOLS.forEach(function (s) { var o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+
+  var pickedSeat = null, pickedChange = null;
+  var st = document.getElementById('seats');
+  SEATS.forEach(function (s) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = s;
+    b.addEventListener('click', function () {
+      pickedSeat = s;
+      [].forEach.call(st.children, function (c) { c.classList.remove('on'); });
+      b.classList.add('on');
+    });
+    st.appendChild(b);
+  });
+
+  var ch = document.getElementById('changes');
+  CHANGES.forEach(function (c) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'reason-card';
+    b.innerHTML = '<b>' + c.t + '</b><span>' + c.d + '</span>';
+    b.addEventListener('click', function () {
+      pickedChange = c.v;
+      [].forEach.call(ch.children, function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      document.getElementById('f-successor').style.display = /Handing off/.test(c.v) ? 'block' : 'none';
+    });
+    ch.appendChild(b);
+  });
+
+  /* Prefill from a link like standdown.html?school=Penn%20State&seat=Back%20end */
+  var params = new URLSearchParams(location.search);
+  var pS = params.get('school');
+  if (pS && SCHOOLS.indexOf(pS) > -1) sel.value = pS;
+  var pSeat = params.get('seat');
+  if (pSeat) SEATS.forEach(function (s, i) { if (s.toLowerCase() === pSeat.toLowerCase()) st.children[i].click(); });
+
+  if (!configured) {
+    document.getElementById('setup').classList.add('on');
+    document.getElementById('submitBtn').disabled = true;
+  }
+
+  function bad(id, isBad) { document.getElementById(id).classList.toggle('bad', isBad); return isBad; }
+
+  document.getElementById('submitBtn').addEventListener('click', function () {
+    if (!configured) return;
+    var name = document.getElementById('i-name').value.trim();
+    var anyBad = false;
+    anyBad = bad('f-name', !name) || anyBad;
+    anyBad = bad('f-school', !sel.value) || anyBad;
+    anyBad = bad('f-seat', !pickedSeat) || anyBad;
+    anyBad = bad('f-change', !pickedChange) || anyBad;
+    if (anyBad) return;
+
+    var f = document.getElementById('qform');
+    f.setAttribute('action', FORM_ACTION);
+    f.innerHTML = '';
+    function add(k, v) {
+      if (!k || !v) return;
+      var i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i);
+    }
+    add(Q.name, name);
+    add(Q.school, sel.value);
+    add(Q.seat, pickedSeat);
+    add(Q.change, pickedChange);
+    add(Q.successor, document.getElementById('i-successor').value.trim());
+    add(Q.why, document.getElementById('i-why').value.trim());
+    add(Q.notes, document.getElementById('i-notes').value.trim());
+    add(Q.email, document.getElementById('i-email').value.trim());
+
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.firstChild.textContent = 'Sending…';
+    var fired = false;
+    function finish() {
+      if (fired) return; fired = true;
+      document.getElementById('formview').style.display = 'none';
+      document.getElementById('done').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+    document.getElementById('qframe').addEventListener('load', finish);
+    setTimeout(finish, 2500);
+    f.submit();
+  });
+</script>
+
+</body>
+</html>
