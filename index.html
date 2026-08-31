@@ -1,10 +1,23 @@
 <!DOCTYPE html>
 <!--
-  fomo x college — campus chapter portal v2
+  fomo x college — campus chapter portal v2.1
   Designed & built by Alex (github.com/agentalex2143), 2026.
   All rights reserved. Not licensed for reuse without permission.
+
   Architecture: data-driven — edit the SCHOOLS array at the bottom of this file
   to update the board; the UI, stats and application prefills render from it.
+
+  v2.2 — recruiter tracking. ?ref=code on any link to this page is carried
+  through to the application, so recruits can be attributed to the person who
+  sent the link. Codes are lowercased and stripped to [a-z0-9_-]. Generate
+  links from the Link builder on ops.html.
+
+  v2.1 — faces on the board. A seat accepts either form:
+      back: 'Alex'                                          <- name only, initials crest
+      back: { name: 'Alex', photo: 'img/alex.jpg',
+              ig: 'alexhandle' }                            <- headshot + socials
+  Missing or broken image files fall back to the initials crest automatically,
+  so you can add names now and photos whenever they come in.
 -->
 <html lang="en">
 <head>
@@ -138,10 +151,23 @@
   .s-status.cap { background: var(--green); }
   .s-status.rec { background: var(--accent-hot); }
   .roster { margin-top: 1rem; border-top: 1px solid rgba(247,247,247,0.1); padding-top: 0.8rem; font-family: var(--mono); font-size: 0.72rem; }
-  .roster div { display: flex; justify-content: space-between; padding: 0.22rem 0; }
+  .roster div { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; padding: 0.22rem 0; }
   .roster .r-role { color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .roster .filled { color: var(--green); font-weight: 700; }
+  .roster .filled { color: var(--green); font-weight: 700; display: inline-flex; align-items: center; gap: 0.42rem; text-transform: uppercase; letter-spacing: 0.5px; min-width: 0; }
+  .roster .filled .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .roster .open { color: var(--accent-hot); font-weight: 700; }
+
+  /* --- faces: headshot with automatic initials fallback --- */
+  .av {
+    position: relative; overflow: hidden; flex-shrink: 0;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-size: 0.5rem; letter-spacing: -0.3px;
+    border: 1px solid rgba(255,255,255,0.28); line-height: 1;
+  }
+  .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .av-lg { width: 42px; height: 42px; font-size: 0.85rem; border-width: 2px; }
+
   .s-more { margin-top: 0.9rem; font-family: var(--mono); font-size: 0.68rem; color: var(--accent-hot); text-transform: uppercase; letter-spacing: 1px; }
 
   .modal-backdrop {
@@ -175,7 +201,11 @@
     transition: all 0.2s;
   }
   .seat-claim:hover { background: var(--accent); }
-  .seat-filled { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; }
+  .seat-holder { display: flex; align-items: center; gap: 0.65rem; text-align: right; }
+  .seat-holder .who { min-width: 0; }
+  .seat-holder .nm { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; display: block; }
+  .seat-holder .hd { font-family: var(--mono); font-size: 0.63rem; color: var(--muted); display: block; }
+  .seat-holder .hd:hover { color: var(--accent-hot); }
   .m-foot { margin-top: 1.2rem; font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
 
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.4rem; }
@@ -335,6 +365,10 @@
       <p>Think <b>club-officer level</b>: a few hours a week, spiking around events. Two seats exist so nobody runs a campus alone.</p>
     </details>
     <details>
+      <summary>What happens after I apply?</summary>
+      <p>Applications are <b>reviewed before a seat is marked filled</b> — the board only shows locked-in operators. If your campus is competitive we'll talk to everyone who applied for it before anyone gets the seat.</p>
+    </details>
+    <details>
       <summary>My school isn't on the board.</summary>
       <p>Apply anyway — pick <b>"Other / my school isn't listed"</b> on the form. The board is wave one, and strong applications put schools on wave two.</p>
     </details>
@@ -381,8 +415,21 @@
     seatBack: 'Back end — the engine (web, sign-ups, logistics)'
   };
 
+  /* ------------------------------------------------------------------
+     THE BOARD — single source of truth.
+
+     A seat is null (open) or a person. A person can be written two ways:
+
+       back: 'Alex'
+       back: { name: 'Alex', photo: 'img/alex.jpg', ig: 'alexhandle' }
+
+     photo  — optional. Path to a file in this repo (put them in /img).
+              Square images crop best. If the file is missing or fails to
+              load, the initials crest shows instead — nothing breaks.
+     ig     — optional Instagram handle, with or without the @.
+     ------------------------------------------------------------------ */
   var SCHOOLS = [
-    { name: 'Illinois', form: 'University of Illinois (UIUC)', abbr: 'UIUC', loc: 'Champaign-Urbana, IL', bg: '#FF5F05', fg: '#13294B', front: null, back: 'Alex' },
+    { name: 'Illinois', form: 'University of Illinois (UIUC)', abbr: 'UIUC', loc: 'Champaign-Urbana, IL', bg: '#FF5F05', fg: '#13294B', front: null, back: { name: 'Alex', photo: 'img/alex.jpg' } },
     { name: 'Penn State', form: 'Penn State', abbr: 'PSU', loc: 'State College, PA', bg: '#041E42', fg: '#ffffff', front: null, back: null },
     { name: 'Ohio State', form: 'Ohio State', abbr: 'OSU', loc: 'Columbus, OH', bg: '#BB0000', fg: '#f7f7f7', front: null, back: null },
     { name: 'Arizona State', form: 'Arizona State', abbr: 'ASU', loc: 'Tempe, AZ', bg: '#8C1D40', fg: '#FFC627', front: null, back: null },
@@ -404,14 +451,60 @@
     { name: 'USC', form: 'USC', abbr: 'USC', loc: 'Los Angeles, CA', bg: '#990000', fg: '#FFC72C', front: null, back: null }
   ];
 
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* A seat value may be a string or an object — normalise to an object. */
+  function person(v) {
+    if (!v) return null;
+    if (typeof v === 'string') return { name: v };
+    return v;
+  }
+  function initials(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    return (parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase();
+  }
+  /* Initials crest with the headshot layered on top; a broken image removes
+     itself and reveals the crest underneath. */
+  function face(p, s, big) {
+    return '<span class="av' + (big ? ' av-lg' : '') + '" style="background:' + esc(s.bg) + ';color:' + esc(s.fg) + ';" aria-hidden="true">' +
+      esc(initials(p.name)) +
+      (p.photo ? '<img src="' + esc(p.photo) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+      '</span>';
+  }
+  function handleLink(p) {
+    if (!p.ig) return '';
+    var h = String(p.ig).replace(/^@/, '');
+    return '<a class="hd" href="https://instagram.com/' + encodeURIComponent(h) + '" target="_blank" rel="noopener">@' + esc(h) + '</a>';
+  }
+
+  /* Recruiter code off the inbound link (?ref=alex), carried through to every
+     apply link on the page so the application is attributed to whoever sent it. */
+  var REF = (function () {
+    var r = new URLSearchParams(location.search).get('ref') || '';
+    return r.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24);
+  })();
+
   function applyUrl(school, seatValue) {
     var u = FORM.base + '?usp=pp_url';
     if (school) u += '&' + FORM.school + '=' + encodeURIComponent(school.form);
     if (seatValue) u += '&' + FORM.seat + '=' + encodeURIComponent(seatValue);
+    if (REF) u += '&ref=' + encodeURIComponent(REF);
     return u;
   }
   function isCaptured(s) { return !!(s.front || s.back); }
   function openSeats(s) { return (s.front ? 0 : 1) + (s.back ? 0 : 1); }
+
+  function rosterLine(role, seat, s) {
+    var p = person(seat);
+    return '<div><span class="r-role">' + role + '</span>' +
+      (p ? '<span class="filled">' + face(p, s) + '<span class="nm">' + esc(p.name) + '</span></span>'
+         : '<span class="open">OPEN</span>') + '</div>';
+  }
 
   var board = document.getElementById('board');
   SCHOOLS.forEach(function (s, i) {
@@ -426,10 +519,10 @@
         '<div><div class="s-name">' + s.name + '</div><div class="s-loc">' + s.loc + '</div></div>' +
       '</div>' +
       '<div class="roster">' +
-        '<div><span class="r-role">Back end</span>' + (s.back ? '<span class="filled">FILLED — ' + s.back.toUpperCase() + '</span>' : '<span class="open">OPEN</span>') + '</div>' +
-        '<div><span class="r-role">Front end</span>' + (s.front ? '<span class="filled">FILLED — ' + s.front.toUpperCase() + '</span>' : '<span class="open">OPEN</span>') + '</div>' +
+        rosterLine('Back end', s.back, s) +
+        rosterLine('Front end', s.front, s) +
       '</div>' +
-      '<div class="s-more">Tap for seats \u2192</div>';
+      '<div class="s-more">Tap for seats →</div>';
     card.addEventListener('click', function () { openModal(i); });
     board.appendChild(card);
   });
@@ -440,10 +533,12 @@
 
   var bg = document.getElementById('modalBg');
   var body = document.getElementById('modalBody');
-  function seatRow(label, desc, holder, url) {
+  function seatRow(label, desc, seat, s, url) {
+    var p = person(seat);
     return '<div class="seat-row"><div class="seat-info"><strong>' + label + '</strong><span>' + desc + '</span></div>' +
-      (holder ? '<span class="seat-filled">FILLED — ' + holder.toUpperCase() + '</span>'
-              : '<a class="seat-claim" href="' + url + '" target="_blank" rel="noopener">Claim seat</a>') + '</div>';
+      (p ? '<div class="seat-holder">' + face(p, s, true) +
+             '<span class="who"><span class="nm">' + esc(p.name) + '</span>' + handleLink(p) + '</span></div>'
+         : '<a class="seat-claim" href="' + url + '" target="_blank" rel="noopener">Claim seat</a>') + '</div>';
   }
   function openModal(i) {
     var s = SCHOOLS[i];
@@ -452,9 +547,9 @@
       '<div class="m-head"><div class="crest" style="background:' + s.bg + ';color:' + s.fg + ';">' + s.abbr + '</div>' +
       '<div><div class="m-name">' + s.name + '</div><div class="m-loc">' + s.loc + '</div></div></div>' +
       '<div class="m-status">Status: ' + (cap ? '<span class="cap">Captured</span>' : '<span class="rec">Recruiting</span>') + ' · ' + openSeats(s) + ' open seat' + (openSeats(s) === 1 ? '' : 's') + '</div>' +
-      seatRow('Front end', 'The face — events, socials, the room', s.front, applyUrl(s, FORM.seatFront)) +
-      seatRow('Back end', 'The engine — web, sign-ups, logistics', s.back, applyUrl(s, FORM.seatBack)) +
-      '<p class="m-foot">Claiming a seat opens the application with this school and role pre-filled.</p>';
+      seatRow('Front end', 'The face — events, socials, the room', s.front, s, applyUrl(s, FORM.seatFront)) +
+      seatRow('Back end', 'The engine — web, sign-ups, logistics', s.back, s, applyUrl(s, FORM.seatBack)) +
+      '<p class="m-foot">Claiming a seat opens the application with this school and role pre-filled. Seats show as filled once an operator is confirmed.</p>';
     bg.classList.add('open');
   }
   function closeModal() { bg.classList.remove('open'); }
